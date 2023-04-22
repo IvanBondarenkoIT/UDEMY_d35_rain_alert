@@ -1,13 +1,13 @@
 import api_manage
+import config
+from send_sms import send_sms
 
 
-def get_api(city_name, country_code):
+def get_api(lat, lon):
     api_key = "976e8d42a3ba638fb1d73cea82cdd613"
-    # "{'lon': 41.6359, 'lat': 41.6416}" "Batumi"
     params = {
-        "lat": 41.6416,
-        "lon": 41.6359,
-        # "exclude": "",
+        "lat": lat,
+        "lon": lon,
         "appid": api_key,
     }
 
@@ -17,15 +17,17 @@ def get_api(city_name, country_code):
 
 
 if __name__ == '__main__':
-    json_data = get_api('Batumi', 'GE')
-    will_rain = False
-    for hour_data in json_data["list"][:9]:
+    json_data = get_api(lat=41.6359, lon=41.6416) # "Batumi"
+    will_rain = ''
+    for hour_data in json_data['list'][:18]: # срез на 9 для 1 суток, 18 - 2 суток. С пустым значением 5 суток
         condition_code = hour_data['weather'][0]['id']
+
         if condition_code < 700:
-            will_rain = True
-            # print(hour_data['dt_txt'], hour_data['weather'][0]['main'])
+            hd = hour_data['dt_txt'].split(' ')
+            will_rain += f"{hd[0][-2:]}:{hd[1][:2]}\n"
 
     if will_rain:
-        print("Bring an umbrella.")
+        print(will_rain)
+        send_sms(f"Bring an umbrella.\n{will_rain}", config.my_actual_phone_number)
 
 
